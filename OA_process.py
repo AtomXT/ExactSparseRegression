@@ -83,7 +83,7 @@ if __name__ == '__main__':
     w = np.loadtxt(data_path + w_name, dtype=int)
     print("Read data completed.")
     gamma = 1/n
-    s0_star, w0_star, s1 = OA_process(X, Y, k, gamma, True)
+    s0_star, w0_star, s1 = OA_process(X, Y, k, gamma, False)
     print((np.sign(w0_star).T@np.sign(w))/k)
     print(w0_star[w!=0].T)
     print(w[w!=0])
