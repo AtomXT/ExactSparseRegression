@@ -1,5 +1,5 @@
 # ExactSparseRegression
-Python implementation for the cutting plane algorithm in: February 2020 Sparse high-dimensional regression: Exact scalable algorithms and phase transitions
+Python implementation for the cutting plane algorithm in: [Sparse high-dimensional regression: Exact scalable algorithms and phase transitions](https://projecteuclid.org/journals/annals-of-statistics/volume-48/issue-1/Sparse-high-dimensional-regression--Exact-scalable-algorithms-and-phase/10.1214/18-AOS1804.short)
 
 Step1: 
 Run data_generation.py with specific parameters: 
