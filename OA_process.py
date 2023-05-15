@@ -21,6 +21,20 @@ from regression_loss import regression_loss
 from warm_start import warm_start
 
 
+def performance(true_w, estimated_w):
+    """
+    Compute the true positive rate and false positive rate as in the paper.
+    :param true_w: True w
+    :param estimated_w: Estimated w
+    :return:
+        tpr: true positive rate
+        fpr: false positive rate
+    """
+    tpr = sum((np.multiply(np.sign(w0_star).T, w) == 1)[0])/k
+    fpr = sum(np.logical_and(np.sign(w0_star).T != 0, w == 0)[0])/(p-k)
+    return tpr, fpr
+
+
 def OA_process(X, Y, k, gamma, ws=False):
     s1 = None
     if ws:
@@ -71,8 +85,8 @@ def OA_process(X, Y, k, gamma, ws=False):
 if __name__ == '__main__':
     # read data
     n = 1000
-    p = 500
-    k = 5
+    p = 2000
+    k = 10
     rho = 0
     data_path = "./data/"
     data_name = "data_%s_%s_%s_%s.txt" % (n, p, k, rho)
@@ -83,8 +97,9 @@ if __name__ == '__main__':
     w = np.loadtxt(data_path + w_name, dtype=int)
     print("Read data completed.")
     gamma = 1/n
-    s0_star, w0_star, s1 = OA_process(X, Y, k, gamma, False)
-    print((np.sign(w0_star).T@np.sign(w))/k)
-    print(w0_star[w!=0].T)
-    print(w[w!=0])
+    s0_star, w0_star, s1 = OA_process(X, Y, k, gamma)
+    A, F = performance(w, w0_star)
+    print(A, F)
+    print(w0_star[w != 0].T)
+    print(w[w != 0])
     # print(s1)
