@@ -30,9 +30,27 @@ def performance(true_w, estimated_w):
         tpr: true positive rate
         fpr: false positive rate
     """
-    tpr = sum((np.multiply(np.sign(w0_star).T, w) == 1)[0])/k
-    fpr = sum(np.logical_and(np.sign(w0_star).T != 0, w == 0)[0])/(p-k)
+    true_w, estimated_w = np.sign(true_w), np.sign(estimated_w)
+    k, p = np.count_nonzero(true_w), len(true_w)
+    tpr = sum((np.multiply(np.sign(estimated_w).T, true_w) == 1)[0])/k
+    fpr = sum(np.logical_and(np.sign(estimated_w).T != 0, true_w == 0)[0])/(p-k)
     return tpr, fpr
+
+
+def read_data(n, p, k, rho, general=False):
+    if general:
+        data_path = "./data/general_"
+        dtype = float
+    else:
+        data_path = "./data/"
+        dtype = int
+    data_name = "data_%s_%s_%s_%s.txt" % (n, p, k, rho)
+    Y_name = "Y_%s_%s_%s_%s.txt" % (n, p, k, rho)
+    w_name = "w_true_%s_%s_%s_%s.txt" % (n, p, k, rho)
+    X = np.loadtxt(data_path + data_name)
+    Y = np.loadtxt(data_path + Y_name)
+    w = np.loadtxt(data_path + w_name, dtype=dtype)
+    return X, Y, w
 
 
 def OA_process(X, Y, k, gamma, ws=False):
@@ -73,33 +91,32 @@ def OA_process(X, Y, k, gamma, ws=False):
         for i in range(p):
             s[i].Start = s1[i]
     m.Params.lazyConstraints = 1
+    m.Params.TIME_LIMIT = 300
+    start = timeit.default_timer()
     m.optimize(logarithmic_callback)
+    end = timeit.default_timer()
 
     s0_star = np.array([round(var.X) for var in m.getVars() if "s" in var.VarName])
     w0_star = np.zeros((p, 1))
     X_s0 = X[:, s0_star == 1]
     w0_star[s0_star == 1, 0] = np.linalg.inv(np.eye(k)/gamma + X_s0.T @ X_s0) @ X_s0.T @ Y
-    return s0_star, w0_star, s1
+    return s0_star, w0_star, s1, end-start
 
 
 if __name__ == '__main__':
     # read data
-    n = 1000
+    n = 95
     p = 2000
     k = 10
     rho = 0
-    data_path = "./data/"
-    data_name = "data_%s_%s_%s_%s.txt" % (n, p, k, rho)
-    Y_name = "Y_%s_%s_%s_%s.txt" % (n, p, k, rho)
-    w_name = "w_true_%s_%s_%s_%s.txt" % (n, p, k, rho)
-    X = np.loadtxt(data_path + data_name)
-    Y = np.loadtxt(data_path + Y_name)
-    w = np.loadtxt(data_path + w_name, dtype=int)
-    print("Read data completed.")
+    general_w = True
+    X, Y, w = read_data(n, p, k, rho, general_w)
+    # print("Read data completed.")
     gamma = 1/n
-    s0_star, w0_star, s1 = OA_process(X, Y, k, gamma)
+    s0_star, w0_star, s1, time = OA_process(X, Y, k, gamma)
     A, F = performance(w, w0_star)
     print(A, F)
     print(w0_star[w != 0].T)
     print(w[w != 0])
+    print(time)
     # print(s1)
